@@ -8,7 +8,8 @@ Python Version: 3.5+
 """
 
 import numpy as np
-
+from scipy.signal import convolve2d, correlate2d
+from sklearn.feature_extraction.image import extract_patches_2d
 
 def conv_nested(image, kernel):
     """A naive implementation of convolution filter.
@@ -29,7 +30,13 @@ def conv_nested(image, kernel):
     out = np.zeros((Hi, Wi))
 
     ### YOUR CODE HERE
-    pass
+    h, w = Hk // 2, Wk // 2
+    for m in range(Hi):
+        for n in range(Wi):
+            for i in range(Hk):
+                for j in range(Wk):
+                    if 0 <= m + h - i < Hi and 0 <= n + w - j < Wi:
+                        out[m, n] += kernel[i, j] * image[m + h - i, n + w - j]    
     ### END YOUR CODE
 
     return out
@@ -53,10 +60,10 @@ def zero_pad(image, pad_height, pad_width):
     """
 
     H, W = image.shape
-    out = None
 
     ### YOUR CODE HERE
-    pass
+    out = np.zeros((H + 2 * pad_height, W + 2 * pad_width))
+    out[pad_height:H + pad_height, pad_width:W + pad_width] = image
     ### END YOUR CODE
     return out
 
@@ -85,7 +92,11 @@ def conv_fast(image, kernel):
     out = np.zeros((Hi, Wi))
 
     ### YOUR CODE HERE
-    pass
+    padded = zero_pad(image, Hk // 2, Wk // 2)
+    kernel = np.flip(kernel, (0, 1))
+    for i in range(Hi):
+        for j in range(Wi):
+            out[i][j] = np.sum(padded[i:i + Hk, j:j + Wk] * kernel)
     ### END YOUR CODE
 
     return out
@@ -104,7 +115,7 @@ def conv_faster(image, kernel):
     out = np.zeros((Hi, Wi))
 
     ### YOUR CODE HERE
-    pass
+    out = convolve2d(image, kernel, mode='same')
     ### END YOUR CODE
 
     return out
@@ -124,7 +135,7 @@ def cross_correlation(f, g):
 
     out = None
     ### YOUR CODE HERE
-    pass
+    out = correlate2d(f, g, mode='same')
     ### END YOUR CODE
 
     return out
@@ -146,7 +157,7 @@ def zero_mean_cross_correlation(f, g):
 
     out = None
     ### YOUR CODE HERE
-    pass
+    out = cross_correlation(f, g - g.mean())
     ### END YOUR CODE
 
     return out
@@ -170,7 +181,13 @@ def normalized_cross_correlation(f, g):
 
     out = None
     ### YOUR CODE HERE
-    pass
+    Hf, Wf = f.shape
+    Hg, Wg = g.shape
+    f_padded = np.pad(f, (((Hg - 1) // 2, Hg // 2), ((Wg - 1) // 2, Wg // 2)), mode='constant')
+    f_patches = extract_patches_2d(f_padded, (Hg, Wg))
+    f_normed = (f_patches - f_patches.mean(axis=(1, 2), keepdims=True)) / f_patches.std(axis=(1, 2), keepdims=True)
+    g_normed = (g - g.mean()) / g.std()
+    out = ((f_normed * g_normed)).sum(axis=(1, 2)).reshape(Hf, Wf)    
     ### END YOUR CODE
 
     return out
