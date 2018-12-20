@@ -8,6 +8,8 @@ Python Version: 3.5+
 """
 
 import numpy as np
+from scipy.signal import convolve2d
+from collections import deque
 
 def conv(image, kernel):
     """ An implementation of convolution filter.
@@ -36,7 +38,7 @@ def conv(image, kernel):
     padded = np.pad(image, pad_width, mode='edge')
 
     ### YOUR CODE HERE
-    pass
+    out = convolve2d(padded, kernel, mode='valid')
     ### END YOUR CODE
 
     return out
@@ -61,7 +63,9 @@ def gaussian_kernel(size, sigma):
     kernel = np.zeros((size, size))
 
     ### YOUR CODE HERE
-    pass
+    d = (np.arange(size) - size // 2) ** 2
+    kernel = np.exp(-(d.reshape(size, 1) + d.reshape(1, size)) / (2 * sigma ** 2)) \
+    / (2 * np.pi * sigma ** 2)
     ### END YOUR CODE
 
     return kernel
@@ -81,7 +85,8 @@ def partial_x(img):
     out = None
 
     ### YOUR CODE HERE
-    pass
+    kernel = np.array([0.5, 0, -0.5]).reshape(1, -1)
+    out = conv(img, kernel)
     ### END YOUR CODE
 
     return out
@@ -101,7 +106,8 @@ def partial_y(img):
     out = None
 
     ### YOUR CODE HERE
-    pass
+    kernel = np.array([0.5, 0, -0.5]).reshape(-1, 1)
+    out = conv(img, kernel)
     ### END YOUR CODE
 
     return out
@@ -125,7 +131,10 @@ def gradient(img):
     theta = np.zeros(img.shape)
 
     ### YOUR CODE HERE
-    pass
+    dx = partial_x(img)
+    dy = partial_y(img)
+    G = np.sqrt(dx * dx + dy * dy) 
+    theta = (np.arctan2(dy, dx) * 180 / np.pi) % 360
     ### END YOUR CODE
 
     return G, theta
@@ -151,7 +160,13 @@ def non_maximum_suppression(G, theta):
     theta = np.floor((theta + 22.5) / 45) * 45
 
     ### BEGIN YOUR CODE
-    pass
+    theta = theta / 180 * np.pi
+    dx = ((np.cos(theta) + 0.5) // 1).astype(int)
+    dy = ((np.sin(theta) + 0.5) // 1).astype(int)
+    padded = np.pad(G, ((1, 1), (1, 1)), mode='constant')
+    i = np.indices((H, W)) + 1
+    query = (G >= padded[i[0] + dy, i[1] + dx]) & (G >= padded[i[0] - dy, i[1] - dx])
+    out[query] = G[query]
     ### END YOUR CODE
 
     return out
@@ -176,7 +191,8 @@ def double_thresholding(img, high, low):
     weak_edges = np.zeros(img.shape, dtype=np.bool)
 
     ### YOUR CODE HERE
-    pass
+    strong_edges[img >= high] = True
+    weak_edges[(img >= low) & (img < high)] = True
     ### END YOUR CODE
 
     return strong_edges, weak_edges
@@ -233,9 +249,17 @@ def link_edges(strong_edges, weak_edges):
     # references intact
     weak_edges = np.copy(weak_edges)
     edges = np.copy(strong_edges)
-
     ### YOUR CODE HERE
-    pass
+    for y in range(H):
+        for x in range(W):
+            if strong_edges[y, x]:
+                q = deque([(y, x)])
+                while len(q) > 0:
+                    i, j = q.pop()
+                    for i1, j1 in get_neighbors(i, j, H, W):
+                        if weak_edges[i1, j1] and not edges[i1, j1]:
+                            edges[i1, j1] = True
+                            q.appendleft((i1, j1))
     ### END YOUR CODE
 
     return edges
@@ -253,7 +277,12 @@ def canny(img, kernel_size=5, sigma=1.4, high=20, low=15):
         edge: numpy array of shape(H, W).
     """
     ### YOUR CODE HERE
-    pass
+    kernel = gaussian_kernel(kernel_size, sigma)
+    smoothed = conv(img, kernel)
+    G, theta = gradient(smoothed)
+    nms = non_maximum_suppression(G, theta)
+    strong_edges, weak_edges = double_thresholding(nms, high, low)
+    edge = link_edges(strong_edges, weak_edges)
     ### END YOUR CODE
 
     return edge
@@ -293,7 +322,9 @@ def hough_transform(img):
     # Find rho corresponding to values in thetas
     # and increment the accumulator in the corresponding coordiate.
     ### YOUR CODE HERE
-    pass
+    r = xs.reshape(-1, 1) * cos_t.reshape(1, -1) + ys.reshape(-1, 1) * sin_t.reshape(1, -1)
+    r = (r.reshape(-1) + diag_len).astype(int)
+    np.add.at(accumulator, (r, np.tile(np.arange(len(thetas)), len(xs))), 1)
     ### END YOUR CODE
 
     return accumulator, rhos, thetas
