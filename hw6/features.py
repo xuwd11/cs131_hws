@@ -42,7 +42,9 @@ class PCA(object):
         # YOUR CODE HERE
         # 1. Compute the mean and store it in self.mean
         # 2. Apply either method to `X_centered`
-        pass
+        self.mean = X.mean(axis=0)
+        X_centered = X - self.mean
+        self.W_pca = self._svd(X_centered)[0]
         # END YOUR CODE
 
         # Make sure that X_centered has mean zero
@@ -80,7 +82,9 @@ class PCA(object):
         #     1. compute the covariance matrix of X, of shape (D, D)
         #     2. compute the eigenvalues and eigenvectors of the covariance matrix
         #     3. Sort both of them in decreasing order (ex: 1.0 > 0.5 > 0.0 > -0.2 > -1.2)
-        pass
+        e_vals, e_vecs = np.linalg.eig(X.T.dot(X) / (N - 1))
+        i = np.argsort(e_vals)[::-1]
+        e_vals, e_vecs = np.real(e_vals[i]), np.real(e_vecs[:, i])
         # END YOUR CODE
 
         # Check the output shapes
@@ -105,7 +109,8 @@ class PCA(object):
         # YOUR CODE HERE
         # Here, compute the SVD of X
         # Make sure to return vecs as the matrix of vectors where each column is a singular vector
-        pass
+        _, vals, vecs = np.linalg.svd(X)
+        vecs = vecs.T
         # END YOUR CODE
         assert vecs.shape == (D, D)
         K = min(N, D)
@@ -129,7 +134,8 @@ class PCA(object):
         # We need to modify X in two steps:
         #     1. first substract the mean stored during `fit`
         #     2. then project onto a subspace of dimension `n_components` using `self.W_pca`
-        pass
+        X_centered = X - self.mean
+        X_proj = X_centered.dot(self.W_pca[:, :n_components])
         # END YOUR CODE
 
         assert X_proj.shape == (N, n_components), "X_proj doesn't have the right shape"
@@ -155,7 +161,7 @@ class PCA(object):
         # Steps:
         #     1. project back onto the original space of dimension D
         #     2. add the mean that we substracted in `transform`
-        pass
+        X = X_proj.dot(self.W_pca[:, :n_components].T) + self.mean
         # END YOUR CODE
 
         return X
