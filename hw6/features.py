@@ -168,12 +168,11 @@ class PCA(object):
 
 
 class LDA(object):
-    """Class implementing Principal component analysis (PCA).
+    """Class implementing Linear Discriminant Analysis (LDA).
 
-    Steps to perform PCA on a matrix of features X:
-        1. Fit the training data using method `fit` (either with eigen decomposition of SVD)
+    Steps to perform LDA on a matrix of features X:
+        1. Fit the training data using method `fit`
         2. Project X into a lower dimensional space using method `transform`
-        3. Optionally reconstruct the original X (as best as possible) using method `reconstruct`
     """
 
     def __init__(self):
@@ -200,7 +199,9 @@ class LDA(object):
         # Solve generalized eigenvalue problem for matrices `scatter_between` and `scatter_within`
         # Use `scipy.linalg.eig` instead of numpy's eigenvalue solver.
         # Don't forget to sort the values and vectors in descending order.
-        pass
+        e_vals, e_vecs = scipy.linalg.eig(scatter_between, scatter_within)
+        #e_vals, e_vecs = np.real(e_vals), np.real(e_vecs)
+        e_vecs = e_vecs[:, np.argsort(e_vals)[::-1]]
         # END YOUR CODE
 
         self.W_lda = e_vecs
@@ -237,7 +238,8 @@ class LDA(object):
         for i in np.unique(y):
             # YOUR CODE HERE
             # Get the covariance matrix for class i, and add it to scatter_within
-            pass
+            X_i = X[y == i]
+            scatter_within += X_i.T.dot(X_i)
             # END YOUR CODE
 
         return scatter_within
@@ -263,13 +265,17 @@ class LDA(object):
         mu = X.mean(axis=0)
         for i in np.unique(y):
             # YOUR CODE HERE
-            pass
+            X_i = X[y == i]
+            N_i = X_i.shape[0]
+            mu_i = X_i.mean(axis=0)
+            d_i = mu_i - mu
+            scatter_between += N_i * d_i.reshape(-1, 1).dot(d_i.reshape(1, -1))
             # END YOUR CODE
 
         return scatter_between
 
     def transform(self, X, n_components):
-        """Project X onto a lower dimensional space using self.W_pca.
+        """Project X onto a lower dimensional space using self.W_lda.
 
         Args:
             X: numpy array of shape (N, D). Each row is an example with D features.
@@ -282,7 +288,7 @@ class LDA(object):
         X_proj = None
         # YOUR CODE HERE
         # project onto a subspace of dimension `n_components` using `self.W_lda`
-        pass
+        X_proj = X.dot(self.W_lda[:, :n_components])
         # END YOUR CODE
 
         assert X_proj.shape == (N, n_components), "X_proj doesn't have the right shape"
