@@ -3,6 +3,8 @@ My solution to assignments in Stanford CS131: Computer Vision Foundations and Ap
 
 * HW0: Basic linear algebra and image manipulation using python ([**done**](/hw0/hw0.ipynb))
 * HW1: Linear filters, convolution and correlation ([**done**](/hw1/hw1.ipynb))
+* HW2: Canny edge detector and Hough transform ([**done**](/hw2/hw2.ipynb))
+* HW3: Harris corner detector, RANSAC and HOG descriptor for panorama stitching ([**done**](/hw3/hw3.ipynb))
 
 ### Original README
 This repository contains the released assignments for the [fall 2017](http://vision.stanford.edu/teaching/cs131_fall1718/) and [fall 2018](http://vision.stanford.edu/teaching/cs131_fall1819) iteration of CS131, a course at Stanford taught by [Juan Carlos Niebles](http://www.niebles.net) and [Ranjay Krishna](http://ranjaykrishna.com).
