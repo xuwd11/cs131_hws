@@ -1,4 +1,10 @@
-# CS131: Computer Vision Foundations and Applications
+## CS131: Computer Vision Foundations and Applications
+My solution to assignments in Stanford CS131: Computer Vision Foundations and Applications ([fall 2018](http://vision.stanford.edu/teaching/cs131_fall1819)).
+
+* HW0: Basic linear algebra and image manipulation using python ([**done**](/hw0/hw0.ipynb))
+* HW1: Linear filters, convolution and correlation ([**done**](/hw1/hw1.ipynb))
+
+### Original README
 This repository contains the released assignments for the [fall 2017](http://vision.stanford.edu/teaching/cs131_fall1718/) and [fall 2018](http://vision.stanford.edu/teaching/cs131_fall1819) iteration of CS131, a course at Stanford taught by [Juan Carlos Niebles](http://www.niebles.net) and [Ranjay Krishna](http://ranjaykrishna.com).
 
 The assignments cover a wide range of topics in computer vision and should expose students to a broad range of concepts and applications. Homework 0 sets up the course with an introduction on how to use images in python and numpy. It covers basic linear algebra that would be helpful through the course.
